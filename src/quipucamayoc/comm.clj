@@ -1,11 +1,10 @@
 (ns quipucamayoc.comm
   (:require [overtone.osc :as o :refer [osc-server osc-client osc-handle osc-send zero-conf-on]]
-            ; [overtone.at-at :as at]
             [clojure.core.async :as async :refer [dropping-buffer sub chan pub go go-loop <! >! put! <!! >!! timeout]]
             ;[cassiel.zeroconf.client :as cl]
             ;[cassiel.zeroconf.server :as s]
-            ;[cognitect.transit :as t]
-            [quil.core :as q]
+            ;[cognitect.transit :as t] ;; Look Into
+            [quil.core :as q] ;; Only using math, replace.
             [clojure.math.numeric-tower :as math]
             [clojure.pprint :refer [pprint]]))
 
@@ -27,10 +26,8 @@
 (def sub-to-iot
   (pub iot-stream #(:topic %)))
 
-(def adjust-quil-with (chan))
 (def adjust-tone-with (chan))
 
-(sub sub-to-iot :bean adjust-quil-with)
 (sub sub-to-iot :inc-pitch-by adjust-tone-with)
 (sub sub-to-iot :plain-inst adjust-tone-with)
 
@@ -39,17 +36,6 @@
     ;;(pprint (into [] (:args msg)))
     (adjust-bean args)
     (adjust-tone args)))
-
-(defn adjust-bean [[id x y z]]
-  (go (>! iot-stream {:topic :bean
-                      :msg { id {:id   1
-                                 :uuid id
-                                 :x    x
-                                 :y    z
-                                 :z    y
-                                 :colo 200
-                                 :conn true
-                                 :sens []}}})))
 
 (defn constrain [v u l]
   (let [val (cond
@@ -70,18 +56,6 @@
                             :fb   (q/map-range y -2 2 0.01 0.99)
                             :fc  (q/map-range z -2 2 0.01 0.99)}}))))
 
-(defn test-bean []
-  (go (>! iot-stream {:topic :bean
-                      :msg {
-                             72834683264 {
-                                           :id   1
-                                           :uuid 72834683264
-                                           :x    (rand-int 100)
-                                           :y    (rand-int 100)
-                                           :z    (rand-int 100)
-                                           :colo (rand-int 255)
-                                           :conn true
-                                           :sens []}}})))
 
 (defn test-sound []
   (let [nota [25 30 35 41 43 47 49 51 56]
