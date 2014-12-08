@@ -8,51 +8,38 @@
 
 (defonce sc-server (boot-internal-server))
 
-(defonce main-sequence (atom [:a 36 :b 27 :c 24 :d 36 :e 41 :f 27 :g 24 :h 36 :i 27 :j 36 :k 27 :l 24]))
-
-(definst soda [a 24 b 27 c 31 fa 1 fb 1/4 fc 1/8]
+(definst soda [
+              a 24 ;; Note 1
+              b 27 ;; Note 2
+              c 31 ;; Note 3
+              d 35 ;; Note 3
+              fa 1 ;; 1 - 6
+              fb 4 ;; 1 - 6
+              fc 8 ;; 1 - 6
+              fd 1 ;; 1 - 6
+              ]
          (let [f (map #(midicps
                         (duty:kr % 0
-                                 (dseq [a b c 36 41 27 24]
+                                 (dseq [a b c d]
                                        INF)))
-                      [fa fb fc])
+                      [(/ 1 fa) (/ 1 fb) (/ 1 fc) (/ 1 fd)])
                tones (map
                        #(blip (* % %2)
-                              (mul-add:kr
-                                (lf-noise1:kr 1/8)
-                                3
-                                4))
+                              (lf-noise0:kr (/ 1 (+ 1(/ (+ fa fb) 2)))))
                        f
-                       [1 4 8])]
-           (rlpf (* 0.5 (g-verb (sum tones) 200 8)))))
+                       [fd fc fb fa])]
+           (rlpf (* 0.5 (g-verb (sum tones) 200 8 (/ 1 fa) (/ 1 fb) (/ 1 fc))))))
 
-(definst soda2 [a 36 b 27 c 24 d 36 e 41 f 27 g 24 h 36 i 27 j 36 k 27 l 24]
-         (let [f (map #(midicps
-                        (duty:kr % 0
-                                 (dseq [a d g j 36 27 24]
-                                       INF)))
-                      [1 1/4 1/8])
-               tones (map
-                       #(blip (* % %2)
-                              (mul-add:kr
-                                (lf-noise1:kr 1/8)
-                                3
-                                4))
-                       f
-                       [1 4 8])]
-           (rlpf (* 0.5 (g-verb (sum tones) 200 8)))))
-
-
-(defn bass [msg]
-  (apply (ctl soda2) msg))
+(defn control [{:keys [a b c d fa fb fc fd]}]
+  (ctl soda :a a :b b :c c :d d :fa fa :fb fb :fc fc :fd fd))
 
 (defn init []
   (println "Init Sound Server")
-  (soda2)
+  (soda)
   (at/every 300
             #(comm/adjust-tone)
             my-schedule)
   (go-loop []
            (when-let [v (<! comm/adjust-tone-with)]
-             (bass (:msg v))
+             (control (:msg v))
            (recur))))

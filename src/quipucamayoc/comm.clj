@@ -37,21 +37,24 @@
     (reset! beans new-beans)))
 
 (defn cap [val]
-  (if (>= val 300)
-    300
+  (if (>= val 350)
+    350
     val))
 
 (defn map-midi [val]
-  (map-range val 0 300 26 39))
+  (map-range val 0 350 22 43))
+
+(defn map-sad [val]
+  (map-range val 22 43 1.0 7.0))
+
+(defn by-bean [vals]
+         (case (count vals)
+           3   {:a (first vals) :b (second vals) :c (last vals) :d (last vals) :fa (map-sad (first vals)) :fb (map-sad (second vals)) :fc (map-sad (last vals)) :fd (map-sad (last vals))}
+           6   {:a (first vals) :b (nth vals 3) :c (second vals) :d (nth vals 4) :fa (map-sad (first vals)) :fb (map-sad (nth vals 3)) :fc (map-sad (second vals)) :fd (map-sad (nth vals 5))}
+           9   {:a (first vals) :b (nth vals 3) :c (nth vals 6) :d (second vals) :fa (map-sad (first vals)) :fb  (map-sad (nth vals 3)) :fc  (map-sad (nth vals 6)) :fd  (map-sad (nth vals 5))}
+           12  {:a (first vals) :b (nth vals 3) :c (nth vals 6) :d (nth vals 9) :fa (map-sad (/ (+ (second vals) (nth vals 2)) 2)) :fb (map-sad (/ (+ (nth vals 3) (nth vals 4)) 2)) :fc (map-sad (/ (+ (nth vals 6) (nth vals 7)) 2)) :fd (map-sad (/ (+ (nth vals 10) (nth vals 11)) 2))}))
 
 (defn adjust-tone []
-  (comment case (count @beans)
-    0 (println "No Beans!")
-    1 (println "One Bean!")
-    2 (println "Two Beans!")
-    3 (println "Three Beans!")
-    4 (println "All the beans!")
-    :else (println "Empty!"))
   (let [vals (->> (map
                     (fn [s]
                          (case (count s)
@@ -76,7 +79,7 @@
     (println "vals: " vals)
     (when (not-empty vals)
       (go (>! iot-stream {:topic :inc-pitch-by
-                          :msg vals})))))
+                          :msg (by-bean vals)})))))
 
 (def client-remote (osc-client "192.168.0.141" 9800))
 (def client-remote-b (osc-client "192.168.1.134" 9800))
@@ -96,6 +99,5 @@
                                     (adjust data))))
     (osc-handle server "/heartbeat" (fn [msg]
                                       (println "MSG: " (:args msg))))
-    ;(comment at/every 2000 #(osc-heartbeat) heart-pool)
-    ))
+    #_(comment at/every 2000 #(osc-heartbeat) heart-pool)))
 
