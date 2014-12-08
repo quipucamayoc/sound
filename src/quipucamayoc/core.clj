@@ -6,4 +6,5 @@
 ;; Removed Quil for now.
 
 (defn -main [& args]
+  (comm/init)
   (tone/init))

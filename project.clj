@@ -9,8 +9,7 @@
                            [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                            ;[eu.cassiel/clojure-zeroconf "1.2.0"]
                            [org.clojure/math.numeric-tower "0.0.4"]
-                           ;[com.cognitect/transit-clj "0.8.259"]
-                           ]
+                           [com.cognitect/transit-clj "0.8.259"]]
             :main ^:skip-aot quipucamayoc.core
             ;:aot [quipucamayoc.core]
             :plugins [[lein-pprint "1.1.2"]
