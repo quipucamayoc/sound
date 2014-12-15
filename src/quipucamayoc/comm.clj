@@ -37,22 +37,34 @@
     (reset! beans new-beans)))
 
 (defn cap [val]
-  (if (>= val 350)
-    350
-    val))
+  (if (>= val 220)
+    (do (println val)
+        220)
+    (if (<= val 20)
+      (do (println val)
+          20)
+      val)))
 
 (defn map-midi [val]
-  (map-range val 0 350 22 43))
+  (map-range val 20 220 22 43))
 
 (defn map-sad [val]
   (map-range val 22 43 1.0 7.0))
 
 (defn by-bean [vals]
-         (case (count vals)
-           3   {:a (first vals) :b (second vals) :c (last vals) :d (last vals) :fa (map-sad (first vals)) :fb (map-sad (second vals)) :fc (map-sad (last vals)) :fd (map-sad (last vals))}
-           6   {:a (first vals) :b (nth vals 3) :c (second vals) :d (nth vals 4) :fa (map-sad (first vals)) :fb (map-sad (nth vals 3)) :fc (map-sad (second vals)) :fd (map-sad (nth vals 5))}
-           9   {:a (first vals) :b (nth vals 3) :c (nth vals 6) :d (second vals) :fa (map-sad (first vals)) :fb  (map-sad (nth vals 3)) :fc  (map-sad (nth vals 6)) :fd  (map-sad (nth vals 5))}
-           12  {:a (first vals) :b (nth vals 3) :c (nth vals 6) :d (nth vals 9) :fa (map-sad (/ (+ (second vals) (nth vals 2)) 2)) :fb (map-sad (/ (+ (nth vals 3) (nth vals 4)) 2)) :fc (map-sad (/ (+ (nth vals 6) (nth vals 7)) 2)) :fd (map-sad (/ (+ (nth vals 10) (nth vals 11)) 2))}))
+  (let [spl (partition 3 vals)]
+    (into [] (map (fn [[a b c]] {:a a :b b :c c :fa (map-sad a) :fb (map-sad b) :fc (map-sad c)}) spl))))
+
+;         (case (count vals)
+;           3   {:a (first vals) :b (second vals) :c (last vals)  :fa (map-sad (first vals)) :fb (map-sad (second vals)) :fc (map-sad (last vals)) :fd (map-sad (last vals))}
+;           6   {:a (first vals) :b (nth vals 3)  :c (second vals) :fa (map-sad (first vals)) :fb (map-sad (nth vals 3)) :fc (map-sad (second vals)) :fd (map-sad (nth vals 5))}
+;           9   {:a (first vals) :b (nth vals 3)  :c (nth vals 6)  :fa (map-sad (first vals)) :fb  (map-sad (nth vals 3)) :fc  (map-sad (nth vals 6)) :fd  (map-sad (nth vals 5))}
+;           12  {:a (first vals) :b (nth vals 3)  :c (nth vals 6)  :fa (map-sad (/ (+ (second vals) (nth vals 2)) 2)) :fb (map-sad (/ (+ (nth vals 3) (nth vals 4)) 2)) :fc (map-sad (/ (+ (nth vals 6) (nth vals 7)) 2)) :fd (map-sad (/ (+ (nth vals 10) (nth vals 11)) 2))}))
+;
+;{:inst1 {:a :b :c :fa :fb :fc}
+; :inst2 {:a :b :c :fa :fb :fc}
+; :inst3 {:a :b :c :fa :fb :fc}
+; :inst4 {:a :b :c :fa :fb :fc}}
 
 (defn adjust-tone []
   (let [vals (->> (map
@@ -76,7 +88,7 @@
                   (apply concat)
                   (map round)
                   (into []))]
-    (println "vals: " vals)
+    #_(println "vals: " vals)
     (when (not-empty vals)
       (go (>! iot-stream {:topic :inc-pitch-by
                           :msg (by-bean vals)})))))
