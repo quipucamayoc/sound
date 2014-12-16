@@ -5,10 +5,11 @@
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
             :dependencies [[org.clojure/clojure "1.7.0-alpha4"]
-                           [quil "2.2.2"]
+                           [quil "2.2.4"]
                            [overtone "0.9.1"]
                            [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                           [com.cognitect/transit-clj "0.8.259"]]
+                           [com.cognitect/transit-clj "0.8.259"]
+                           [aysylu/loom "0.5.0"]]
 
             :jvm-opts ^:replace ["-server"
                                  "-Xmx512m"

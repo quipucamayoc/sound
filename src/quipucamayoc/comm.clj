@@ -39,6 +39,20 @@
 
 ;; Command Logic
 
+(defn inc-check
+  "Returns a positive or negative number based on the intensity of axis tilt.
+  to-do: adjust to work with real world values."
+  ([vals]
+    (inc-check vals 0 0))
+  ([vals accumulating-total past-val]
+    (if (empty? vals)
+      accumulating-total
+      (recur (rest vals)
+             (cond (> (first vals) past-val) (inc accumulating-total)
+                   (< (first vals) past-val) (dec accumulating-total)
+                   (= (first vals) past-val) accumulating-total)
+             (first vals)))))
+
 (defn adjust-instruments
   "Cleans up the over time data from the watcher and sends off commands based on
   calculated events"
@@ -51,7 +65,19 @@
                                       (for [[k v] v]
                                         [k (vec (map second v))]))]))]
     ;; Command Distribution.
-    ))
+    (dorun (map (fn [lone-bean]
+                  ;; Soft axis tilts.
+                  (let [sensors (second lone-bean)
+                        x (:x sensors)
+                        y (:y sensors)
+                        z (:z sensors)]
+                    (println (first lone-bean) x y z
+                      {:x (inc-check x)
+                       :y (inc-check y)
+                       :z (inc-check z)})))
+                merged-beans))
+    #_(go (>! iot-stream {:topic :inc-pitch-by
+                          :msg (by-bean vals)}))))
 
 (defn bean-watcher
   "Stores a batch of previous bean states in order to access their historical data once
@@ -67,7 +93,7 @@
       (if (not= old-state new-state)
         (swap! bean-history conj new-state)))))
 
-;; Other
+;; To move or remove
 
 (defn cap [val]
   (if (>= val 220)
@@ -81,36 +107,6 @@
 
 (defn map-sad [val]
   (map-range val 22 43 1.0 7.0))
-
-(defn by-bean [vals]
-  (let [spl (partition 3 vals)]
-    (into [] (map (fn [[a b c]] {:a a :b b :c c :fa (map-sad a) :fb (map-sad b) :fc (map-sad c)}) spl))))
-
-#_(defn adjust-tone []
-  (let [vals (->> (map
-                    (fn [s]
-                         (case (count s)
-                            1 (conj
-                                (map #(-> %
-                                          (cap)
-                                          (map-midi))
-                                     s) 42 42)
-                            2 (conj
-                                (map #(-> %
-                                          (cap)
-                                          (map-midi))
-                                     s) 42)
-                            3 (map #(-> %
-                                        (cap)
-                                        (map-midi))
-                                   s)))
-                       (map (fn [m] (map val m)) (map val @beans)))
-                  (apply concat)
-                  (map round)
-                  (into []))]
-    (when (not-empty vals)
-      (go (>! iot-stream {:topic :inc-pitch-by
-                          :msg (by-bean vals)})))))
 
 ;; Server
 
