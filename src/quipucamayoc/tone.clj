@@ -81,16 +81,16 @@
 (defn init []
   (println "Init Sound Server")
 
-  (let [soda1 (guitar :amp 0.01)
+  #_(let [soda1 (guitar :amp 0.01)
         soda2 (soda :amp 0.01)
         soda3 (soda :amp 0.01)
         soda4 (guitar :amp 0.01)]
     (reset! instruments [soda1 soda2 soda3 soda4]))
 
-  (at/every 150
+  #_(at/every 150
             #(comm/adjust-tone)
             my-schedule)
   (go-loop []
     (when-let [v (<! comm/adjust-tone-with)]
-      (control (:msg v))
+      #_(control (:msg v))
       (recur))))
