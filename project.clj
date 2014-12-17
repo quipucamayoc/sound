@@ -7,11 +7,7 @@
             :dependencies [[org.clojure/clojure "1.7.0-alpha4"]
                            [quil "2.2.4"]
                            [overtone "0.9.1"]
-                           [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                           [com.cognitect/transit-clj "0.8.259"]
-                           [incanter/incanter-core "1.5.5"]
-                           [org.clojure/core.typed "0.2.72"]
-                           [prismatic/schema "0.3.3"]]
+                           [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 
             :jvm-opts ^:replace ["-server"
                                  "-Xmx512m"

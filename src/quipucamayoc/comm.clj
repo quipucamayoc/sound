@@ -3,15 +3,7 @@
   (:require [overtone.osc :as o :refer [osc-server osc-client osc-handle osc-send zero-conf-on]]
             [clojure.core.async :as async :refer [dropping-buffer sub chan pub go go-loop <! >! put! <!! >!! timeout]]
             [quil.core :refer [map-range round abs]]
-            [clojure.pprint :refer [pprint]]
-            [clojure.core.typed :as t]
-            [schema.core :as s]))
-
-; #Data integrity validation
-
-(def beans-merged
-  "A schema for merged-beans"
-  {s/Keyword {s/Keyword [s/Num]}})
+            [clojure.pprint :refer [pprint]]))
 
 (declare adjust adjust-tone bean-watcher)
 
@@ -63,13 +55,11 @@
 ;; # Command Logic
 ;; ## Analysis functions
 
-(s/defn inc-check
+(defn inc-check
   "Returns a positive or negative number based on the intensity of axis tilt."
-  ([vals :- [s/Num]]
+  ([vals]
     (inc-check vals 0 0))
-  ([vals :- [s/Num]
-    movement :- s/Num
-    past-val :- s/Num]
+  ([vals movement past-val]
     (if (empty? vals)
       movement
       (recur (rest vals)
@@ -94,9 +84,9 @@
     ;(if (<= 6 checked-average)
     ;  (println "Trigger an all axis rise" checked-average))
     (dorun (map #(let [change (abs (- (abs (second %)) checked-average))]
-                  (when-let [event-scale (cond (> change 200) :large
-                                               (> change 100) :medium
-                                               (> change 50) :small)]
+                  (when-let [event-scale (cond (> change 250) :large
+                                               (> change 150) :medium
+                                               (> change 35) :small)]
                     (go (>! iot-stream {:topic :axis-trigger
                                         :msg {:device (first lone-bean)
                                               :action event-scale
@@ -119,7 +109,7 @@
   "Cleans up the over time data from the watcher and sends off commands based on
   calculated events"
   [beans]
-  (when-let [merged-beans (s/validate beans-merged (arrange-bean-data beans))]
+  (when-let [merged-beans (arrange-bean-data beans)]
     (dorun (map
       #(-> %
            axis-differences)
