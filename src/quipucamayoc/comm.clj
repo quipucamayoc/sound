@@ -2,22 +2,49 @@
   (:import (java.net InetAddress))
   (:require [overtone.osc :as o :refer [osc-server osc-client osc-handle osc-send zero-conf-on]]
             [clojure.core.async :as async :refer [dropping-buffer sub chan pub go go-loop <! >! put! <!! >!! timeout]]
-            [quil.core :refer [map-range round]]
-            [clojure.pprint :refer [pprint]]))
+            [quil.core :refer [map-range round abs]]
+            [clojure.pprint :refer [pprint]]
+            [clojure.core.typed :as t]
+            [schema.core :as s]))
+
+; #Data integrity validation
+
+(def beans-merged
+  "A schema for merged-beans"
+  {s/Keyword {s/Keyword [s/Num]}})
 
 (declare adjust adjust-tone bean-watcher)
 
-;; Bean Input and History
+; #Async Works
+
+;; ##Main Chan
+(def iot-stream (chan (dropping-buffer 1024)))
+
+(def sub-to-iot
+  (pub iot-stream #(:topic %)))
+
+;; ##Sound Events
+(def adjust-tone (chan))
+(sub sub-to-iot :raw-write  adjust-tone)
+(sub sub-to-iot :axis-trigger  adjust-tone)
+
+;; ##IO Events
+(def adjust-data (chan))
+(def watch-events (chan))
+(sub sub-to-iot :bean-input adjust-data)
+(sub sub-to-iot :bean-hist  watch-events)
+
+; #Bean Input and History
 
 (def bean-input (ref {}))
 (def bean-history (atom []))
 
-(defn start-bean-watcher
+(defn start-hist-watcher
   "Watches the input `ref` and triggers `bean-watcher` on update."
   []
   (add-watch bean-input :historian bean-watcher))
 
-(defn adjust
+(defn update-bean
   "Consumes the data sent from the Bean server. Stores it in a common ref."
   [msg]
   (let [id (keyword (first msg))
@@ -25,38 +52,60 @@
         value (last msg)]
     (dosync (alter bean-input #(merge-with merge % {id {axis value}})))))
 
-;; Async Works
+(defn start-bean-listner
+  "Listens to server inputs and calls adjust based on the messages recieved."
+  []
+  (go-loop []
+    (when-let [v (<! adjust-data)]
+      (update-bean (:msg v))
+      (recur))))
 
-(def iot-stream (chan (dropping-buffer 1024)))
+;; # Command Logic
+;; ## Analysis functions
 
-(def sub-to-iot
-  (pub iot-stream #(:topic %)))
-
-(def adjust-tone-with (chan))
-
-(sub sub-to-iot :inc-pitch-by adjust-tone-with)
-(sub sub-to-iot :plain-inst adjust-tone-with)
-
-;; Command Logic
-
-(defn inc-check
-  "Returns a positive or negative number based on the intensity of axis tilt.
-  to-do: adjust to work with real world values."
-  ([vals]
+(s/defn inc-check
+  "Returns a positive or negative number based on the intensity of axis tilt."
+  ([vals :- [s/Num]]
     (inc-check vals 0 0))
-  ([vals accumulating-total past-val]
+  ([vals :- [s/Num]
+    movement :- s/Num
+    past-val :- s/Num]
     (if (empty? vals)
-      accumulating-total
+      movement
       (recur (rest vals)
-             (cond (> (first vals) past-val) (inc accumulating-total)
-                   (< (first vals) past-val) (dec accumulating-total)
-                   (= (first vals) past-val) accumulating-total)
+             (cond (> (first vals) past-val) (- past-val (first vals))
+                   (< (first vals) past-val) (- past-val (first vals))
+                   (== (first vals) past-val) movement
+                   :else (do (println "Inc-Check issue with:" movement vals past-val)
+                             movement))
              (first vals)))))
 
-(defn adjust-instruments
-  "Cleans up the over time data from the watcher and sends off commands based on
-  calculated events"
-  [beans]
+;; ## Per-Bean Triggers
+
+(defn axis-differences
+  "Detects and dispatches movements based on rise and fall"
+  [lone-bean]
+  (let [sensors (second lone-bean)
+        {:keys [x y z]} sensors
+        checked {:x (if x (inc-check x) 0)
+                 :y (if y (inc-check y) 0)
+                 :z (if z (inc-check z) 0)}
+        checked-average (/ (apply + (vals checked)) 3)]
+    ;(if (<= 6 checked-average)
+    ;  (println "Trigger an all axis rise" checked-average))
+    (dorun (map #(let [change (abs (- (abs (second %)) checked-average))]
+                  (when-let [event-scale (cond (> change 150):large
+                                               (> change 75) :medium
+                                               (> change 25) :small)]
+                    (go (>! iot-stream {:topic :axis-trigger
+                                        :msg {:device (first lone-bean)
+                                              :action event-scale
+                                              :sensor (first %)}}))))
+                checked))))
+
+;; ## Organization
+
+(defn arrange-bean-data [beans]
   (let [inter (apply merge-with concat beans)
         mediate (zipmap (keys inter) (map #(group-by first %) (vals inter)))
         merged-beans (into {}
@@ -64,36 +113,43 @@
                              [k (into {}
                                       (for [[k v] v]
                                         [k (vec (map second v))]))]))]
-    ;; Command Distribution.
-    (dorun (map (fn [lone-bean]
-                  ;; Soft axis tilts.
-                  (let [sensors (second lone-bean)
-                        x (:x sensors)
-                        y (:y sensors)
-                        z (:z sensors)]
-                    (println (first lone-bean) x y z
-                      {:x (inc-check x)
-                       :y (inc-check y)
-                       :z (inc-check z)})))
-                merged-beans))
-    #_(go (>! iot-stream {:topic :inc-pitch-by
-                          :msg (by-bean vals)}))))
+    merged-beans))
+
+(defn adjust-instruments
+  "Cleans up the over time data from the watcher and sends off commands based on
+  calculated events"
+  [beans]
+  (when-let [merged-beans (s/validate beans-merged (arrange-bean-data beans))]
+    (dorun (map
+      #(-> %
+           axis-differences)
+      merged-beans))))
+
+(defn start-watch-listner []
+  (go-loop []
+    (when-let [v (<! watch-events)]
+      (adjust-instruments (:msg v))
+      (recur))))
+
+#_(go (>! iot-stream {:topic :raw-write
+                      :msg (by-bean vals)}))
 
 (defn bean-watcher
   "Stores a batch of previous bean states in order to access their historical data once
   the atom is full."
   [key bean-ref old-state new-state]
-  (let [window 20
+  (let [window 10
         beans @bean-history
         num-beans (count beans)]
     (if (<= window num-beans)
       (do
         (reset! bean-history [new-state])
-        (adjust-instruments beans))
+        (go (>! iot-stream {:topic :bean-hist
+                            :msg beans})))
       (if (not= old-state new-state)
         (swap! bean-history conj new-state)))))
 
-;; To move or remove
+;;; To move or remove
 
 (defn cap [val]
   (if (>= val 220)
@@ -108,7 +164,7 @@
 (defn map-sad [val]
   (map-range val 22 43 1.0 7.0))
 
-;; Server
+; #Server
 
 (def client-remote (osc-client "192.168.0.141" 9800))
 (def client-remote-b (osc-client "192.168.1.134" 9800))
@@ -122,14 +178,17 @@
     (try (osc-send client-remote "/my-addr" ip)
          (catch Exception e "no r"))))
 
-;; Launch Communication
+; #Launch Communication
 
 (defn init[]
   (let [server (osc-server 9801)]
-    (start-bean-watcher)
     (osc-handle server "/beans" (fn [msg]
                                   (let [data (:args msg)]
-                                    (adjust data))))
+                                    (go (>! iot-stream {:topic :bean-input
+                                                        :msg data})))))
     (osc-handle server "/heartbeat" (fn [msg]
-                                      (println "MSG: " (:args msg))))))
+                                      (println "MSG: " (:args msg))))
+    (start-hist-watcher)
+    (start-bean-listner)
+    (start-watch-listner)))
 
