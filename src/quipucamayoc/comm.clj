@@ -138,10 +138,11 @@
   "Stores a batch of previous bean states in order to access their historical data once
   the atom is full."
   [key bean-ref old-state new-state]
-  (let [window 10
-        beans @bean-history
-        num-beans (count beans)]
-    (if (<= window num-beans)
+  (let [beans @bean-history
+        num-beans (count @bean-input)
+        history-states (count beans)
+        window (* 5 num-beans)]
+    (if (<= window history-states)
       (do
         (reset! bean-history [new-state])
         (go (>! iot-stream {:topic :bean-hist
