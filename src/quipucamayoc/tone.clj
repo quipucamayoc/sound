@@ -9,50 +9,52 @@
 
 (defonce sc-server (boot-internal-server))
 
-(def sg (guitar))
+(def lg-guitar (guitar))
+(def md-guitar (guitar))
+(def sm-guitar (guitar))
 
 (defn playat [time delta offset]
   (+ time (* offset delta)))
 
-;; Axis based guitar.
+;; Axis based guitar trigger.
 
 (defmulti axis-trigger :action)
 
 (defmethod axis-trigger :large [msg]
   (case (:sensor msg)
     :x (let [time (now) delta 281]
-         (guitar-pick sg 1 3 (playat time delta 0))
-         (guitar-pick sg 1 -1 (playat time delta 5)))
+         (guitar-pick lg-guitar 1 3 (playat time delta 0))
+         (guitar-pick lg-guitar 1 -1 (playat time delta 5)))
     :y (let [time (now) delta 282]
-         (guitar-pick sg 1 8 (playat time delta 0))
-         (guitar-pick sg 1 -1 (playat time delta 6)))
+         (guitar-pick md-guitar 1 8 (playat time delta 0))
+         (guitar-pick md-guitar 1 -1 (playat time delta 6)))
     :z (let [time (now) delta 283]
-         (guitar-pick sg 1 10 (playat time delta 0))
-         (guitar-pick sg 1 -1 (playat time delta 8)))))
+         (guitar-pick sm-guitar 1 10 (playat time delta 0))
+         (guitar-pick sm-guitar 1 -1 (playat time delta 8)))))
 
 (defmethod axis-trigger :medium [msg]
   (case (:sensor msg)
     :x (let [time (now) delta 291]
-         (guitar-pick sg 3 3 (playat time delta 0))
-         (guitar-pick sg 3 -1 (playat time delta 6)))
+         (guitar-pick lg-guitar 3 3 (playat time delta 0))
+         (guitar-pick md-guitar 3 -1 (playat time delta 6)))
     :y (let [time (now) delta 292]
-         (guitar-pick sg 3 8 (playat time delta 0))
-         (guitar-pick sg 3 -1 (playat time delta 5)))
+         (guitar-pick lg-guitar 3 8 (playat time delta 0))
+         (guitar-pick md-guitar 3 -1 (playat time delta 5)))
     :z (let [time (now) delta 293]
-         (guitar-pick sg 3 10 (playat time delta 0))
-         (guitar-pick sg 3 -1 (playat time delta 8)))))
+         (guitar-pick sm-guitar 3 10 (playat time delta 0))
+         (guitar-pick sm-guitar 3 -1 (playat time delta 8)))))
 
 (defmethod axis-trigger :small [msg]
   (case (:sensor msg)
     :x (let [time (now) delta 301]
-         (guitar-pick sg 5 3 (playat time delta 0))
-         (guitar-pick sg 5 -1 (playat time delta 8)))
+         (guitar-pick lg-guitar 5 3 (playat time delta 0))
+         (guitar-pick lg-guitar 5 -1 (playat time delta 8)))
     :y (let [time (now) delta 302]
-         (guitar-pick sg 5 8 (playat time delta 0))
-         (guitar-pick sg 5 -1 (playat time delta 6)))
+         (guitar-pick md-guitar 5 8 (playat time delta 0))
+         (guitar-pick md-guitar 5 -1 (playat time delta 6)))
     :z (let [time (now) delta 303]
-         (guitar-pick sg 5 10 (playat time delta 0))
-         (guitar-pick sg 5 -1 (playat time delta 5)))))
+         (guitar-pick sm-guitar 5 10 (playat time delta 0))
+         (guitar-pick sm-guitar 5 -1 (playat time delta 5)))))
 
 ;; Event distributor
 
@@ -65,7 +67,15 @@
 (defn init []
   (println "Init Sound Server")
 
-  (ctl sg :pre-amp 4.0 :distort 0.31
+  (ctl lg-guitar :pre-amp 4.3 :distort 0.41
+       :lp-freq 3000 :lp-rq 0.12
+       :rvb-mix 0.1 :rvb-room 0.7 :rvb-damp 0.2)
+
+  (ctl md-guitar :pre-amp 4.2 :distort 0.31
+       :lp-freq 2500 :lp-rq 0.2
+       :rvb-mix 0.2 :rvb-room 0.7 :rvb-damp 0.5)
+
+  (ctl sm-guitar :pre-amp 4.0 :distort 0.31
        :lp-freq 2000 :lp-rq 0.12
        :rvb-mix 0.1 :rvb-room 0.7 :rvb-damp 0.2)
 
