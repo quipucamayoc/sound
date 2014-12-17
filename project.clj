@@ -1,5 +1,5 @@
-(defproject quipucamayoc "0.1.9"
-            :description "Quipucamayoc Core"
+(defproject quipucamayoc "0.2.1"
+            :description "Quipucamayoc Core *&* Sound"
             :url "http://quipucamayoc.com/"
             :license {:name "Eclipse Public License"
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
@@ -17,6 +17,10 @@
 
             :main ^:skip-aot quipucamayoc.core
 
+            :source-paths ["src"]
+            :resource-paths ["resources"]
+
             :plugins [[lein-pprint "1.1.2"]
                       [lein-gorilla "0.3.3"]
-                      [lein-ancient "0.6.0-SNAPSHOT"]])
+                      [lein-ancient "0.6.0-SNAPSHOT"]
+                      [lein-marginalia "0.8.0"]])
