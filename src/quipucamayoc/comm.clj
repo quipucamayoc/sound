@@ -94,9 +94,9 @@
     ;(if (<= 6 checked-average)
     ;  (println "Trigger an all axis rise" checked-average))
     (dorun (map #(let [change (abs (- (abs (second %)) checked-average))]
-                  (when-let [event-scale (cond (> change 150):large
-                                               (> change 75) :medium
-                                               (> change 25) :small)]
+                  (when-let [event-scale (cond (> change 200) :large
+                                               (> change 100) :medium
+                                               (> change 50) :small)]
                     (go (>! iot-stream {:topic :axis-trigger
                                         :msg {:device (first lone-bean)
                                               :action event-scale
