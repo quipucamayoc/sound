@@ -24,14 +24,6 @@
                       [lein-gorilla "0.3.5-SNAPSHOT"]
                       [lein-bikeshed "0.2.0"]
                       [lein-kibit "0.0.8"]
-                      [lein-hiera "0.9.0"]
                       [jonase/eastwood "0.2.1"]
                       [lein-ancient "0.6.5"]
-                      [lein-marginalia "0.8.0"]]
-
-            :hera {:path "target/ns-hierarchy.png"
-              :vertical true
-               :show-external true
-                :cluster-depth 0
-                 :trim-ns-prefix true
-                  :ignore-ns #{}})
+                      [lein-marginalia "0.8.0"]])
