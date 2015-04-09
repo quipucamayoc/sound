@@ -3,7 +3,8 @@
 ;;
 (ns quipucamayoc.core
   (:require [quipucamayoc.tone :as tone]
-            [quipucamayoc.comm :as comm]))
+            [quipucamayoc.comm :as comm]
+            [quipucamayoc.db :as db]))
 
 (defn -main [& args]
   (comm/init)

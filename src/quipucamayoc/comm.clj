@@ -5,7 +5,7 @@
   (:import (java.net InetAddress))
   (:require [overtone.osc :as o :refer [osc-server osc-client osc-handle osc-send zero-conf-on]]
             [clojure.core.async :as async :refer [dropping-buffer sub chan pub go go-loop <! >! put! <!! >!! timeout]]
-            [quil.core :refer [map-range round abs]]
+            [quil.core :refer [map-range round abs norm constrain]]
             [clojure.pprint :refer [pprint]]))
 
 (declare adjust adjust-tone device-watcher)
@@ -23,6 +23,7 @@
 (def adjust-tone (chan))
 (sub sub-to-iot :raw-write  adjust-tone)
 (sub sub-to-iot :axis-trigger  adjust-tone)
+(sub sub-to-iot :sample-blend  adjust-tone)
 
 ;; ###IO Events
 (def adjust-data (chan))
@@ -73,6 +74,7 @@
                              movement))
              (first vals)))))
 
+
 ;; ### Per-device Triggers
 
 (defn axis-differences
@@ -96,6 +98,20 @@
                                               :sensor (first %)}}))))
                 checked))))
 
+;; ### Provides control based on averaged and mapped axis data.
+
+(defn axis-mapped
+  "Detects and dispatches movements based on rise and fall"
+  [lone-device in-min in-max topic action]
+  (let [{:keys [x y z]} (second lone-device)
+        normalized [:vola (if x (norm (constrain (last x) in-min in-max) in-min in-max) 0)
+                    :volb (if y (norm (constrain (last y) in-min in-max) in-min in-max) 0)
+                    :volc (if z (norm (constrain (last z) in-min in-max) in-min in-max) 0)]]
+    (go (>! iot-stream {:topic topic
+                        :msg {:device (first lone-device)
+                              :action action
+                              :data normalized}}))))
+
 ;; ### Organization
 
 (defn arrange-device-data
@@ -115,9 +131,22 @@
   calculated events"
   [devices]
   (when-let [merged-devices (arrange-device-data devices)]
-    (dorun (map
-      #(-> %
-           axis-differences)
+
+    ;; Temporary setup for a per-instrument test.
+
+    (axis-differences (last merged-devices))
+    (axis-mapped (first merged-devices) 0 250 :sample-blend :thunder-storm)
+    (axis-mapped (second merged-devices) 0 250 :sample-blend :fly-fire)
+
+    (comment dorun (map
+
+             (fn [lone-bean]
+               (case (first lone-bean)
+                 :key1 (axis-differences lone-bean)
+                 :key2 (axis-mapped lone-bean 0 250 :sample-blend :thunder-storm)
+                 :key3 (axis-mapped lone-bean 0 250 :sample-blend :fly-fire)
+                 (axis-differences lone-bean)))
+
       merged-devices))))
 
 (defn start-watch-listner

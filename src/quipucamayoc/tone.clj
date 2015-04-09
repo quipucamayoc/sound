@@ -17,7 +17,7 @@
 
 (defonce bs6 (load-sample "assets/guitar_pluck/bs6.wav"))
 (definst play-bs6 [amp 1]
-         (* (play-buf 1 bs6) amp))
+         (* amp (play-buf 1 bs6)))
 (def static-bs6 (partial play-bs6 :amp 1))
 
 (defonce bs8 (load-sample "assets/guitar_pluck/bs8.wav"))
@@ -72,16 +72,55 @@
       :y (static-bs8)
       :z (static-bs9)))
 
+;; ## Sample Blend
+
+(defonce wind (load-sample "assets/wind/ws2.wav"))
+(defonce rain (load-sample "assets/storm/rain.wav"))
+(defonce thunder (load-sample "assets/storm/soft-thunder.wav"))
+
+(defonce flies (load-sample "assets/firefly/flies.wav"))
+(defonce fire-harsh (load-sample "assets/firefly/fireharsh.wav"))
+(defonce fire-soft (load-sample "assets/firefly/firesoft.wav"))
+
+;; #### Snapping Fire and Flies
+
+(definst fly-fire [vola 1 volb 0 volc 0]
+         (let [a (* (* vola 1.5) (play-buf :num-channels 1 :bufnum flies :loop 1))
+               b (* (/ volb 2) (play-buf :num-channels 1 :bufnum fire-harsh :loop 1))
+               c (* volc (play-buf :num-channels 1 :bufnum fire-soft :loop 1))]
+           (mix [a b c])))
+
+;; #### Storm. Thunder. Wind.
+
+(definst storm [vola 1 volb 0 volc 0]
+         (let [a (* (* vola 1.3) (play-buf :num-channels 1 :bufnum wind :loop 1))
+               b (* (* volb 1.3) (play-buf :num-channels 1 :bufnum rain :loop 1))
+               c (* (* volc 1.3) (play-buf :num-channels 1 :bufnum thunder :loop 1))]
+           (mix [a b c])))
+
+(defmulti sample-blend
+          "Control (ctl) specific sample-blend instruments. Allows for constantly running background sounds."
+          :action)
+
+(defmethod sample-blend :fly-fire [msg]
+  (let [[_ vola _ volb _ volc] (:data msg)]
+    (ctl fly-fire :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
+
+(defmethod sample-blend :thunder-storm [msg]
+  (let [[_ vola _ volb _ volc] (:data msg)]
+    (ctl storm :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
+
 ;; ## Event distributor
 
 (defmulti control
-          "Currently only triggers the `axis-trigger` but will filter all sound adjusting events based on their
-          initial topic. As the number of trigger events grows this will keep the codebase more maintainable."
+          "Distributes, to appropriate sound generators, various trigger events from q/comm"
           :topic)
 
 (defmethod control :axis-trigger [{:keys [msg]}]
-  (axis-trigger msg)
-  #_(println "Got" msg))
+  (axis-trigger msg))
+
+(defmethod control :sample-blend [{:keys [msg]}]
+  (sample-blend msg))
 
 (defn init
   "Sets instruments to their initial state, starts listening for events."
@@ -97,6 +136,12 @@
   (ctl sm-guitar :pre-amp 4 :distort 0.10 :noise-amp 0.82
        :lp-freq 3400 :lp-rq 1.5
        :rvb-mix 0.01 :rvb-room 0.01 :rvb-damp 0.5)
+
+  (fly-fire)
+  (storm)
+
+  (ctl fly-fire :vola 0 :volb 0 :volc 0)
+  (ctl storm :vola 0 :volb 0 :volc 0)
 
   (go-loop []
     (when-let [v (<! comm/adjust-tone)]
