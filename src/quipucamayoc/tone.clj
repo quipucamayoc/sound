@@ -82,19 +82,27 @@
 (defonce fire-harsh (load-sample "assets/firefly/fireharsh.wav"))
 (defonce fire-soft (load-sample "assets/firefly/firesoft.wav"))
 
+;; #### Snapping Wind and Flies
+
+(definst fly-wind [vola 1 volb 0 volc 0]
+         (let [a 0
+               b (* (* volb 1.7) (play-buf :num-channels 1 :bufnum wind :loop 1))
+               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum flies :loop 1))]
+           (mix [a b c])))
+
 ;; #### Snapping Fire and Flies
 
 (definst fly-fire [vola 1 volb 0 volc 0]
-         (let [a (* (* vola 1.5) (play-buf :num-channels 1 :bufnum flies :loop 1))
-               b (* (/ volb 2) (play-buf :num-channels 1 :bufnum fire-harsh :loop 1))
-               c (* volc (play-buf :num-channels 1 :bufnum fire-soft :loop 1))]
+         (let [a 0
+               b (* (/ volb 2.5) (play-buf :num-channels 1 :bufnum fire-harsh :loop 1))
+               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum fire-soft :loop 1))]
            (mix [a b c])))
 
 ;; #### Storm. Thunder. Wind.
 
 (definst storm [vola 1 volb 0 volc 0]
-         (let [a (* (* vola 1.3) (play-buf :num-channels 1 :bufnum wind :loop 1))
-               b (* (* volb 1.3) (play-buf :num-channels 1 :bufnum rain :loop 1))
+         (let [a 0
+               b (* (* volb 1.5) (play-buf :num-channels 1 :bufnum rain :loop 1))
                c (* (* volc 1.3) (play-buf :num-channels 1 :bufnum thunder :loop 1))]
            (mix [a b c])))
 
@@ -109,6 +117,10 @@
 (defmethod sample-blend :thunder-storm [msg]
   (let [[_ vola _ volb _ volc] (:data msg)]
     (ctl storm :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
+
+(defmethod sample-blend :fly-wind [msg]
+  (let [[_ vola _ volb _ volc] (:data msg)]
+    (ctl fly-wind :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
 
 ;; ## Event distributor
 
@@ -125,15 +137,15 @@
 (defn init
   "Sets instruments to their initial state, starts listening for events."
   []
-  (ctl lg-guitar :pre-amp 4 :distort 0.14 :noise-amp 0.82
+  (ctl lg-guitar :pre-amp 5 :distort 0.14 :noise-amp 0.82
        :lp-freq 3400 :lp-rq 4.5
        :rvb-mix 0.01 :rvb-room 0.01 :rvb-damp 0.5)
 
-  (ctl md-guitar :pre-amp 4 :distort 0.12 :noise-amp 0.82
+  (ctl md-guitar :pre-amp 5 :distort 0.12 :noise-amp 0.82
        :lp-freq 3400 :lp-rq 2.5
        :rvb-mix 0.01 :rvb-room 0.01 :rvb-damp 0.5)
 
-  (ctl sm-guitar :pre-amp 4 :distort 0.10 :noise-amp 0.82
+  (ctl sm-guitar :pre-amp 5 :distort 0.10 :noise-amp 0.82
        :lp-freq 3400 :lp-rq 1.5
        :rvb-mix 0.01 :rvb-room 0.01 :rvb-damp 0.5)
 

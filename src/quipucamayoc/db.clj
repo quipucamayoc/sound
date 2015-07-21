@@ -3,7 +3,7 @@
             [monger.gridfs :as gfs :refer [store-file make-input-file filename content-type metadata]]))
 
 
-(defn init [korks]
+(defn init []
   (let [conn (mg/connect)
         db   (mg/get-db conn "quipu-audio")
         fs   (mg/get-gridfs conn "quipu-audio")]
@@ -14,4 +14,4 @@
                      :tags [:guitar]})
           (content-type "audio/wav"))
 
-    (gfs/find fs {:filename "bs1.wav"})))
+    (clojure.pprint/pprint (gfs/find fs {:filename "bs1.wav"}))))
