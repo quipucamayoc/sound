@@ -1,7 +1,7 @@
 ;; #Communication
 ;; Handles communication with the Wearable Devices server as well as passes all messages within the program.
 ;;
-(ns quipucamayoc.comm
+(ns sound.comm
   (:import (java.net InetAddress))
   (:require [overtone.osc :as o :refer [osc-server osc-client osc-handle osc-send zero-conf-on]]
             [clojure.core.async :as async :refer [dropping-buffer sub chan pub go go-loop <! >! put! <!! >!! timeout]]
@@ -24,6 +24,7 @@
 (sub sub-to-iot :raw-write adjust-tone)
 (sub sub-to-iot :axis-trigger adjust-tone)
 (sub sub-to-iot :sample-blend adjust-tone)
+(sub sub-to-iot :change-inst adjust-tone)
 
 ;; ###IO Events
 (def adjust-data (chan))
@@ -236,7 +237,8 @@
   (if v
     (-> (/ (apply + v) (count v))
         (constrain in-min in-max)
-        (norm in-min in-max))
+        (map-range in-min in-max 0 250)
+        (norm 0 250))
     0))
 
 (defn send-tap [device tap scale variation]
@@ -247,6 +249,13 @@
                                   :action scale
                                   :sensor variation}})))))
 
+(defn change-inst [device tap]
+  (if (< 2 (count tap))
+    (when (= 1 (floor (last tap)))
+      (go (>! iot-stream {:topic :change-inst
+                          :msg   {:device device
+                                  :action :change}})))))
+
 (defn axis-mapped
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
@@ -255,10 +264,10 @@
                     :volb (create-volume y in-min in-max)
                     :volc (create-volume z in-min in-max)]]
 
-    ;(if a (send-tap (first lone-device) a :small :x))
-    ;(if a (send-tap (first lone-device) b :small :y))
-    ;(if a (send-tap (first lone-device) c :small :x))
-    ;(if a (send-tap (first lone-device) d :small :z))
+    (if a (send-tap (first lone-device) a :large :x))
+    (if b (send-tap (first lone-device) b :small :y))
+    (if c (send-tap (first lone-device) c :small :x))
+    (if d (change-inst (first lone-device) d))
 
     (go (>! iot-stream {:topic topic
                         :msg   {:device (first lone-device)
@@ -291,7 +300,7 @@
     #_(println "hi")
     (let [vmap (vec merged-devices)]
       (not= (nil? (first vmap))
-            (axis-mapped (first vmap) -250 250 :sample-blend :fly-fire)))
+            (axis-mapped (first vmap) -250 250 :sample-blend :thunder-storm)))
 
     (comment (fn [& args]
                (not= (nil? (first args))

@@ -1,12 +1,12 @@
 ;; # Core = Start ☃
 ;; The main enrty point. Contained screen-based visualization via Quil. Will be added back once sound is finalized.
 ;;
-(ns quipucamayoc.core
+(ns sound.core
   (:require
-    [quipucamayoc.tone :as tone]
-    [quipucamayoc.comm :as comm]
-    ;[quipucamayoc.db :as db]
-    ;[quipucamayoc.visual :as visual]
+    [sound.tone :as tone]
+    [sound.comm :as comm]
+    ;[sound.db :as db]
+    ;[sound.visual :as visual]
     ;[quil.core :as q]
     ;[quil.middleware :as m]
     ))

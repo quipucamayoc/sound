@@ -1,5 +1,5 @@
-(defproject quipucamayoc "0.2.2"
-            :description "Quipucamayoc Core *&* Sound"
+(defproject com.quipucamayoc/sound "0.2.2"
+            :description "Quipucamayoc Sound"
             :url "http://quipucamayoc.com/"
             :license {:name "Eclipse Public License"
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
@@ -7,6 +7,7 @@
             :dependencies [[org.clojure/clojure "1.7.0"]
                            [quil "2.2.6" :exclusions [org.clojure/clojure]]
                            [overtone "0.9.1"]
+                           [prismatic/schema "0.4.3"]
                            [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                            [com.novemberain/monger "3.0.0"]]
 
@@ -17,7 +18,7 @@
                                  "-XX:MaxGCPauseMillis=1"
                                  "-XX:+UseTLAB"]
 
-            :main ^:skip-aot quipucamayoc.core
+            :main ^:skip-aot sound.core
 
             :source-paths ["src"]
             :resource-paths ["resources"]

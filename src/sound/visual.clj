@@ -1,14 +1,14 @@
-(ns quipucamayoc.visual
+(ns sound.visual
   (:require
     [clojure.core.async :as a :refer [<! go-loop]]
     [clojure.pprint :refer [pprint]]
-    [quipucamayoc.comm :as comm]
+    [sound.comm :as comm]
     [quil.core :as q]
     [quil.middleware :as m]))
 
 (comment
 
-  (require :reload 'quipucamayoc.visual)
+  (require :reload 'sound.visual)
 
   )
 
@@ -172,7 +172,7 @@
     ;(println (:x event))
     ;(assoc state :x (:x event) :y (:y event))
     ; decrease radius
-    #_(update-in [:r] shrink)
+    ;;(update-in [:r] shrink)
     ))
 
 (defn key-typed [state event]

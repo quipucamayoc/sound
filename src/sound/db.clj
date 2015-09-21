@@ -1,4 +1,4 @@
-(ns quipucamayoc.db
+(ns sound.db
   (:require [monger.core :as mg]
             [monger.gridfs :as gfs :refer [store-file make-input-file filename content-type metadata]]))
 

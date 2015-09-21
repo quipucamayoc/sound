@@ -1,9 +1,9 @@
 ;; #(over)tone
 ;; Leverages Overtone to actuate sound on triggers from wearable sensor events.
 ;;
-(ns quipucamayoc.tone
+(ns sound.tone
   (:require [clojure.core.async :as a :refer [<! go-loop]]
-            [quipucamayoc.comm :as comm]
+            [sound.comm :as comm]
             [overtone.core :refer :all]
             [overtone.synth.stringed :refer :all]
             [overtone.synth.sts :refer :all]
@@ -11,24 +11,30 @@
 
 (defonce sc-server (boot-internal-server))
 
+(def instrument (atom {:current :thunder-storm}))
 
 ;; ## Sample Sampled Instruments
 ;; ### Guitar Pluck
 
-(defonce bs6 (load-sample "assets/guitar_pluck/bs6.wav"))
+(defonce bs5 (load-sample "assets/sz/rs1.wav"))
+(definst play-bs5 [amp 1]
+         (* amp (play-buf 1 bs5)))
+(def static-bs5 (partial play-bs5 :amp 0.5))
+
+(defonce bs6 (load-sample "assets/sz/rs2.wav"))
 (definst play-bs6 [amp 1]
          (* amp (play-buf 1 bs6)))
-(def static-bs6 (partial play-bs6 :amp 1))
+(def static-bs6 (partial play-bs6 :amp 0.5))
 
-(defonce bs8 (load-sample "assets/guitar_pluck/bs8.wav"))
+(defonce bs8 (load-sample "assets/short/Siku_03.wav"))
 (definst play-bs8 [amp 1]
          (* (play-buf 1 bs8) amp))
-(def static-bs8 (partial play-bs8 :amp 1))
+(def static-bs8 (partial play-bs8 :amp 0.5))
 
-(defonce bs9 (load-sample "assets/guitar_pluck/bs9.wav"))
+(defonce bs9 (load-sample "assets/short/Siku_04.wav"))
 (definst play-bs9 [amp 1]
          (* (play-buf 1 bs9) amp))
-(def static-bs9 (partial play-bs9 :amp 1))
+(def static-bs9 (partial play-bs9 :amp 0.5))
 
 
 ;; ## Sound Helpers
@@ -52,7 +58,7 @@
 
 (defmethod axis-trigger :large [msg]
     (case (:sensor msg)
-      :x (guitar-pick lg-guitar 5 7)
+      :x (static-bs5)
       :y (guitar-pick lg-guitar 3 5)
       :z (guitar-pick lg-guitar 1 3)))
 
@@ -74,8 +80,8 @@
 
 ;; ## Sample Blend
 
-(defonce wind (load-sample "assets/wind/ws2.wav"))
-(defonce rain (load-sample "assets/storm/rain.wav"))
+(defonce wind (load-sample "assets/longer/jr.wav"))
+(defonce rain (load-sample "assets/longer/oj.wav"))
 (defonce thunder (load-sample "assets/storm/soft-thunder.wav"))
 
 (defonce flies (load-sample "assets/firefly/flies.wav"))
@@ -85,25 +91,27 @@
 ;; #### Snapping Wind and Flies
 
 (definst fly-wind [vola 1 volb 0 volc 0]
-         (let [a 0
+         (let [a (* (* volb 1.7) (play-buf :num-channels 1 :bufnum thunder :loop 1))
                b (* (* volb 1.7) (play-buf :num-channels 1 :bufnum wind :loop 1))
-               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum flies :loop 1))]
+               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum rain :loop 1))]
            (mix [a b c])))
 
 ;; #### Snapping Fire and Flies
 
 (definst fly-fire [vola 1 volb 0 volc 0]
-         (let [a 0
+         (let [a (* (* volb 1.7) (play-buf :num-channels 1 :bufnum thunder :loop 1))
                b (* (/ volb 2.5) (play-buf :num-channels 1 :bufnum fire-harsh :loop 1))
-               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum fire-soft :loop 1))]
+               c (* (* volc 2.0) (play-buf :num-channels 1 :bufnum fire-soft :loop 1))]
            (mix [a b c])))
+
+;; To-Do, cleaner cuts.
 
 ;; #### Storm. Thunder. Wind.
 
 (definst storm [vola 1 volb 0 volc 0]
-         (let [a 0
-               b (* (* volb 1.5) (play-buf :num-channels 1 :bufnum rain :loop 1))
-               c (* (* volc 1.3) (play-buf :num-channels 1 :bufnum thunder :loop 1))]
+         (let [a (* (* volb 2.1) (play-buf :num-channels 1 :bufnum flies :loop 1))
+               b (* (* volb 1.7) (play-buf :num-channels 1 :bufnum rain :loop 1))
+               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum wind :loop 1))]
            (mix [a b c])))
 
 (defmulti sample-blend
@@ -122,6 +130,12 @@
   (let [[_ vola _ volb _ volc] (:data msg)]
     (ctl fly-wind :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
 
+(defn ctl-current [msg]
+  (let [[_ vola _ volb _ volc] (:data msg)]
+    (if (= :thunder-storm (:current @instrument))
+      (ctl storm :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))
+      (ctl fly-fire :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc)))))
+
 ;; ## Event distributor
 
 (defmulti control
@@ -132,7 +146,15 @@
   (axis-trigger msg))
 
 (defmethod control :sample-blend [{:keys [msg]}]
-  (sample-blend msg))
+  (ctl-current msg))
+
+(defmethod control :change-inst [{:keys [msg]}]
+  (println msg)
+  (if (= :thunder-storm (:current @instrument))
+    (do (reset! instrument {:current :fire-fly})
+        (ctl storm :vola 0 :volb 0 :volc 0))
+    (do (reset! instrument {:current :thunder-storm})
+        (ctl fly-fire :vola 0 :volb 0 :volc 0))))
 
 (defn init
   "Sets instruments to their initial state, starts listening for events."
