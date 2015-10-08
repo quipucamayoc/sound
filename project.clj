@@ -7,9 +7,9 @@
             :dependencies [[org.clojure/clojure "1.7.0"]
                            [quil "2.2.6" :exclusions [org.clojure/clojure]]
                            [overtone "0.9.1"]
-                           [prismatic/schema "0.4.3"]
+                           [prismatic/schema "1.0.1"]
                            [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                           [com.novemberain/monger "3.0.0"]]
+                           [com.novemberain/monger "3.0.1"]]
 
             :jvm-opts ^:replace ["-server"
                                  "-Xmx2g"
