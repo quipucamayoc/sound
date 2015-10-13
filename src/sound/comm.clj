@@ -337,7 +337,7 @@
                 0 (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm)
                 1 (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm)
                 2 (axis-mapped {id data} -250 250 :sample-blend :thunder-storm)
-                nil)) vmap)))
+                (pprint data))) vmap)))
 
     (comment (fn [& args]
                (not= (nil? (first args))
