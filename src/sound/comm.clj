@@ -336,9 +336,9 @@
                      (when-let [t (not (or (nil? (last (:type data)))
                                            (false? (last (:type data)))))]
                        (case (last (:type data))
-                         0.0 (do (pprint (last (:type data))) (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm))
-                         1.0 (do (pprint (last (:type data))) (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm))
-                         2.0 (do (pprint (last (:type data))) (axis-mapped {id data} -250 250 :sample-blend :thunder-storm))
+                         0.0 (do (pprint {id (last (:type data))}) (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm))
+                         1.0 (do (pprint {id (last (:type data))}) (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm))
+                         2.0 (do (pprint {id (last (:type data))}) (axis-mapped {id data} -250 250 :sample-blend :thunder-storm))
                          (pprint data)))) vmap)))
 
     (comment (fn [& args]
