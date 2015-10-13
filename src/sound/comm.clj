@@ -165,7 +165,8 @@
       4 (alter-device-input id :a value)
       5 (alter-device-input id :b value)
       6 (alter-device-input id :c value)
-      7 (alter-device-input id :d value))
+      7 (alter-device-input id :d value)
+      8 (alter-device-input id :t value))
     #_(cond
       (= :x-y axis) (do
                      (dosync (alter device-input #(merge-with merge % {id {:x (constrain-axis (take-piece true value) 427 1047)}})))
