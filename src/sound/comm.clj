@@ -79,11 +79,11 @@
          :36 {:r [151 200] :g [151 200] :b [51 100]}
          :37 {:r [201 255] :g [201 255] :b [0 50]}
 
-        :38 {:r [201 255] :g [0 50] :b [201 255]}
-        :39 {:r [151 200] :g [51 100] :b [151 200]}
-        :40 {:r [101 150] :g [101 150] :b [101 150]}
-        :41 {:r [51 100] :g [151 200] :b [51 100]}
-        :42 {:r [0 50] :g [201 255] :b [0 50]}}))
+         :38 {:r [201 255] :g [0 50] :b [201 255]}
+         :39 {:r [151 200] :g [51 100] :b [151 200]}
+         :40 {:r [101 150] :g [101 150] :b [101 150]}
+         :41 {:r [51 100] :g [151 200] :b [51 100]}
+         :42 {:r [0 50] :g [201 255] :b [0 50]}}))
 
 (def colour-assignments
   (atom {}))
@@ -116,12 +116,12 @@
       2 (let [s (clojure.string/join "" (drop-while zero? (take-last 3 chunk)))]
           (if (= "" s)
             0
-          (* (Integer/parseInt  s) -1)))
+            (* (Integer/parseInt s) -1)))
       3 false
       false)))
 
 (defn constrain-axis [data min max]
-    (map-range (constrain data -240 240) -240 240 min max))
+  (map-range (constrain data -240 240) -240 240 min max))
 
 (defn get-in-range [data {:keys [r g b]}]
   {:r (map-range (constrain data 0 255) 0 255 (first r) (second r))
@@ -168,19 +168,19 @@
       7 (alter-device-input id :d value)
       8 (alter-device-input id :type value))
     #_(cond
-      (= :x-y axis) (do
-                     (dosync (alter device-input #(merge-with merge % {id {:x (constrain-axis (take-piece true value) 427 1047)}})))
-                     (dosync (alter device-input #(merge-with merge % {id {:y (constrain-axis (take-piece false value) 283 623)}}))))
-      (= :z-color axis) (do
-                          (dosync (alter device-input #(merge-with merge % {id {:z (constrain-axis (take-piece true value) 236 576)}})))
-                          (dosync (alter device-input #(merge-with merge % {id {:colour (constrain-colour id (take-piece false value))}}))))
-      (= :weight-trail axis) (do
-                               (dosync (alter device-input #(merge-with merge % {id {:weight (constrain-weight (take-piece true value))}})))
-                               (dosync (alter device-input #(merge-with merge % {id {:trail (take-piece false value)}}))))
-      (= :character-local axis) (do
-                                  (dosync (alter device-input #(merge-with merge % {id {:character (take-piece true value)}})))
-                                  (dosync (alter device-input #(merge-with merge % {id {:local (take-piece false value)}}))))
-      :else nil)))
+        (= :x-y axis) (do
+                        (dosync (alter device-input #(merge-with merge % {id {:x (constrain-axis (take-piece true value) 427 1047)}})))
+                        (dosync (alter device-input #(merge-with merge % {id {:y (constrain-axis (take-piece false value) 283 623)}}))))
+        (= :z-color axis) (do
+                            (dosync (alter device-input #(merge-with merge % {id {:z (constrain-axis (take-piece true value) 236 576)}})))
+                            (dosync (alter device-input #(merge-with merge % {id {:colour (constrain-colour id (take-piece false value))}}))))
+        (= :weight-trail axis) (do
+                                 (dosync (alter device-input #(merge-with merge % {id {:weight (constrain-weight (take-piece true value))}})))
+                                 (dosync (alter device-input #(merge-with merge % {id {:trail (take-piece false value)}}))))
+        (= :character-local axis) (do
+                                    (dosync (alter device-input #(merge-with merge % {id {:character (take-piece true value)}})))
+                                    (dosync (alter device-input #(merge-with merge % {id {:local (take-piece false value)}}))))
+        :else nil)))
 
 (defn start-device-listner
   "Listens to server inputs and calls adjust based on the messages recieved."
@@ -260,7 +260,7 @@
 (defn axis-mapped
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
-  (let [{:keys [x y z  a b c d]} (second lone-device)
+  (let [{:keys [x y z a b c d]} (second lone-device)
         normalized [:vola (create-volume x in-min in-max)
                     :volb (create-volume y in-min in-max)
                     :volc (create-volume z in-min in-max)]]
@@ -271,14 +271,14 @@
     (if d (send-tap (first lone-device) d :medium :x))
 
     #_(go (>! iot-stream {:topic topic
-                        :msg   {:device (first lone-device)
-                                :action action
-                                :data   normalized}}))))
+                          :msg   {:device (first lone-device)
+                                  :action action
+                                  :data   normalized}}))))
 
 (defn axis-mapped-no-touch
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
-  (let [{:keys [x y z  a b c d]} (second lone-device)
+  (let [{:keys [x y z a b c d]} (second lone-device)
         normalized [:vola (create-volume x in-min in-max)
                     :volb (create-volume y in-min in-max)
                     :volc (create-volume z in-min in-max)]]
@@ -291,7 +291,7 @@
 (defn axis-mapped-no-touch-upper-sensor
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
-  (let [{:keys [x y z  a b c d]} (second lone-device)
+  (let [{:keys [x y z a b c d]} (second lone-device)
         normalized [:vola (create-volume a in-min in-max)
                     :volb (create-volume b in-min in-max)
                     :volc (create-volume c in-min in-max)]]
@@ -333,12 +333,13 @@
     (let [vmap (vec merged-devices)
           num (count vmap)]
       (doall (mapv (fn [[id data]]
-                     (when-let [t (last (:type data))]
-              (case (abs t)
-                0 (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm)
-                1 (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm)
-                2 (axis-mapped {id data} -250 250 :sample-blend :thunder-storm)
-                (pprint data)))) vmap)))
+                     (when-let [t (not (or (nil? (last (:type data)))
+                                           (false? (last (:type data)))))]
+                       (case (abs t)
+                         0 (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm)
+                         1 (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm)
+                         2 (axis-mapped {id data} -250 250 :sample-blend :thunder-storm)
+                         (pprint data)))) vmap)))
 
     (comment (fn [& args]
                (not= (nil? (first args))
@@ -407,10 +408,10 @@
   []
   (let [server (osc-server 41104)]
     (osc-handle server "/devices" (fn [msg]
-                                  (let [data (:args msg)]
-                                    (go (>! iot-stream {:topic :device-input
-                                                        :msg   data}))
-                                    #_(pprint data))))
+                                    (let [data (:args msg)]
+                                      (go (>! iot-stream {:topic :device-input
+                                                          :msg   data}))
+                                      #_(pprint data))))
     (osc-handle server "/heartbeat" (fn [msg]
                                       (println "MSG: " (:args msg))))
     (start-hist-watcher)
