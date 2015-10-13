@@ -7,11 +7,12 @@
             [overtone.core :refer :all]
             [overtone.synth.stringed :refer :all]
             [overtone.synth.sts :refer :all]
-            [overtone.at-at :as at]))
+            [overtone.at-at :as at]
+            [clojure.pprint :refer [pprint]]))
 
 (defonce sc-server (boot-internal-server))
 
-(def instrument (atom {:current :fire-fly}))
+(def instrument (atom {:current :pariacaca}))
 
 ;; ## Sample Sampled Instruments
 ;; ### Guitar Pluck
@@ -30,6 +31,12 @@
 (definst play-bs8 [amp 1]
          (* (play-buf 1 bs8) amp))
 (def static-bs8 (partial play-bs8 :amp 0.5))
+
+(defonce bs9 (load-sample "assets/ws_two/Birth of Pariacaca/Short/Siku 4.wav"))
+(definst play-bs9 [amp 1]
+         (* (play-buf 1 bs9) amp))
+(def static-bs9 (partial play-bs9 :amp 0.5))
+
 
 (defonce bs9 (load-sample "assets/ws_two/Birth of Pariacaca/Short/Siku 4.wav"))
 (definst play-bs9 [amp 1]
@@ -57,84 +64,83 @@
 ;; #### Large
 
 (defmethod axis-trigger :large [msg]
-    (case (:sensor msg)
-      :x (static-bs5)
-      :y (guitar-pick lg-guitar 3 5)
-      :z (guitar-pick lg-guitar 1 3)))
+  (case (:sensor msg)
+    :x (static-bs5)
+    :y (guitar-pick lg-guitar 3 5)
+    :z (guitar-pick lg-guitar 1 3)))
 
 ;; #### Medium
 
 (defmethod axis-trigger :medium [msg]
-    (case (:sensor msg)
-      :x (guitar-pick md-guitar 5 7)
-      :y (guitar-pick md-guitar 3 5)
-      :z (guitar-pick md-guitar 1 3)))
+  (case (:sensor msg)
+    :x (guitar-pick md-guitar 5 7)
+    :y (guitar-pick md-guitar 3 5)
+    :z (guitar-pick md-guitar 1 3)))
 
 ;; #### Small
 
 (defmethod axis-trigger :small [msg]
-    (case (:sensor msg)
-      :x (static-bs6)
-      :y (static-bs8)
-      :z (static-bs9)))
+  (case (:sensor msg)
+    :x (static-bs6)
+    :y (static-bs8)
+    :z (static-bs9)))
 
-;; ## Sample Blend
+;; October 2015 Workshop
 
-(defonce wind (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Joel and Ronald.wav"))
-(defonce rain (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Polar Wind.wav"))
-(defonce thunder (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Rain.wav"))
+(defonce pariacaca-long-joel&ronald (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Joel and Ronald.wav"))
+(defonce pariacaca-long-polar-wind (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Polar Wind.wav"))
+(defonce pariacaca-long-rain (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Rain.wav"))
 
-(defonce flies (load-sample "assets/ws_two/Masoma/Long Tracks/Flies.wav"))
-(defonce fire-harsh (load-sample "assets/ws_two/Masoma/Long Tracks/Omar and Joel.wav"))
-(defonce fire-soft (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
-
-;; #### Snapping Wind and Flies
-
-(definst fly-wind [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 1.7) (play-buf :num-channels 1 :bufnum thunder :loop 1))
-               b (* (* volb 1.7) (play-buf :num-channels 1 :bufnum wind :loop 1))
-               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum rain :loop 1))]
+(definst pariacaca [vola 1 volb 0 volc 0]
+         (let [a (* (* volb 1) (play-buf :num-channels 1 :bufnum pariacaca-long-joel&ronald :loop 1))
+               b (* (* volb 1) (play-buf :num-channels 1 :bufnum pariacaca-long-polar-wind :loop 1))
+               c (* (* volc 1) (play-buf :num-channels 1 :bufnum pariacaca-long-rain :loop 1))]
            (mix [a b c])))
 
-;; #### Snapping Fire and Flies
+(defonce masoma-long-flies (load-sample "assets/ws_two/Masoma/Long Tracks/Flies.wav"))
+(defonce masoma-long-omar&joel (load-sample "assets/ws_two/Masoma/Long Tracks/Omar and Joel.wav"))
+(defonce masoma-long-quechua (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
 
-(definst fly-fire [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 1.7) (play-buf :num-channels 1 :bufnum thunder :loop 1))
-               b (* (/ volb 2.5) (play-buf :num-channels 1 :bufnum fire-harsh :loop 1))
-               c (* (* volc 2.0) (play-buf :num-channels 1 :bufnum fire-soft :loop 1))]
+(definst masoma [vola 1 volb 0 volc 0]
+         (let [a (* (* volb 1) (play-buf :num-channels 1 :bufnum masoma-long-flies :loop 1))
+               b (* (* volb 1) (play-buf :num-channels 1 :bufnum masoma-long-omar&joel :loop 1))
+               c (* (* volc 1) (play-buf :num-channels 1 :bufnum masoma-long-quechua :loop 1))]
+           (mix [a b c])))
+
+(defonce yacana-long-blue-beans (load-sample "assets/ws_two/Yacana/Long Tracks/Blue Beans Buenos Aires Wrkshp.wav"))
+(defonce yacana-earthquake (load-sample "assets/ws_two/Yacana/Long Tracks/Earthquake Rumble.wav"))
+(defonce yacana-water-stream (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
+
+(definst yacana [vola 1 volb 0 volc 0]
+         (let [a (* (* volb 1) (play-buf :num-channels 1 :bufnum yacana-long-blue-beans :loop 1))
+               b (* (* volb 1) (play-buf :num-channels 1 :bufnum yacana-earthquake :loop 1))
+               c (* (* volc 1) (play-buf :num-channels 1 :bufnum yacana-water-stream :loop 1))]
            (mix [a b c])))
 
 ;; To-Do, cleaner cuts.
-
-;; #### Storm. Thunder. Wind.
-
-(definst storm [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 2.1) (play-buf :num-channels 1 :bufnum flies :loop 1))
-               b (* (* volb 1.7) (play-buf :num-channels 1 :bufnum rain :loop 1))
-               c (* (* volc 1.5) (play-buf :num-channels 1 :bufnum wind :loop 1))]
-           (mix [a b c])))
 
 (defmulti sample-blend
           "Control (ctl) specific sample-blend instruments. Allows for constantly running background sounds."
           :action)
 
-(defmethod sample-blend :fly-fire [msg]
+(defmethod sample-blend :pariacaca [msg]
   (let [[_ vola _ volb _ volc] (:data msg)]
-    (ctl fly-fire :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
+    (ctl pariacaca :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
 
-(defmethod sample-blend :thunder-storm [msg]
+(defmethod sample-blend :masoma [msg]
   (let [[_ vola _ volb _ volc] (:data msg)]
-    (ctl storm :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
+    (ctl masoma :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
 
-(defmethod sample-blend :fly-wind [msg]
+(defmethod sample-blend :yacana [msg]
   (let [[_ vola _ volb _ volc] (:data msg)]
-    (ctl fly-wind :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
+    (ctl yacana :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))))
 
 (defn ctl-current [msg]
   (let [[_ vola _ volb _ volc] (:data msg)]
-    (if (= :thunder-storm (:current @instrument))
-      (ctl storm :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))
-      (ctl fly-fire :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc)))))
+    (case (:current @instrument)
+      :yacana (ctl yacana :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))
+      :masoma (ctl masoma :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc))
+      :pariacaca (ctl pariacaca :vola (if (nil? vola) 0 vola) :volb (if (nil? volb) 0 volb) :volc (if (nil? volc) 0 volc)))))
 
 ;; ## Event distributor
 
@@ -152,9 +158,9 @@
   (println msg)
   (if (= :thunder-storm (:current @instrument))
     (do (reset! instrument {:current :fire-fly})
-        (ctl storm :vola 0 :volb 0 :volc 0))
+        #_(ctl storm :vola 0 :volb 0 :volc 0))
     (do (reset! instrument {:current :thunder-storm})
-        (ctl fly-fire :vola 0 :volb 0 :volc 0))))
+        #_(ctl fly-fire :vola 0 :volb 0 :volc 0))))
 
 (defn init
   "Sets instruments to their initial state, starts listening for events."
@@ -171,11 +177,13 @@
        :lp-freq 3400 :lp-rq 1.5
        :rvb-mix 0.01 :rvb-room 0.01 :rvb-damp 0.5)
 
-  (fly-fire)
-  (storm)
+  (pariacaca)
+  (masoma)
+  (yacana)
 
-  (ctl fly-fire :vola 0 :volb 0 :volc 0)
-  (ctl storm :vola 0 :volb 0 :volc 0)
+  (ctl pariacaca :vola 0 :volb 0 :volc 0)
+  (ctl masoma :vola 0 :volb 0 :volc 0)
+  (ctl yacana :vola 0 :volb 0 :volc 0)
 
   (go-loop []
     (when-let [v (<! comm/adjust-tone)]

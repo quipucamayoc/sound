@@ -18,7 +18,7 @@
                                  "-XX:MaxGCPauseMillis=1"
                                  "-XX:+UseTLAB"]
 
-            :main ^:skip-aot sound.core
+            :main sound.core
 
             :source-paths ["src"]
             :resource-paths ["resources"]
