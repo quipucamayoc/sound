@@ -38,10 +38,10 @@
 (def static-bs9 (partial play-bs9 :amp 0.5))
 
 
-(defonce bs9 (load-sample "assets/ws_two/Birth of Pariacaca/Short/Siku 4.wav"))
-(definst play-bs9 [amp 1]
-         (* (play-buf 1 bs9) amp))
-(def static-bs9 (partial play-bs9 :amp 0.5))
+(defonce bs10 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 1.wav"))
+(definst play-bs10 [amp 1]
+         (* (play-buf 1 bs10) amp))
+(def static-bs10 (partial play-bs10 :amp 0.5))
 
 
 ;; ## Sound Helpers
@@ -65,7 +65,7 @@
 
 (defmethod axis-trigger :large [msg]
   (case (:sensor msg)
-    :x (static-bs5)
+    :x (static-bs10)
     :y (guitar-pick lg-guitar 3 5)
     :z (guitar-pick lg-guitar 1 3)))
 
@@ -73,7 +73,7 @@
 
 (defmethod axis-trigger :medium [msg]
   (case (:sensor msg)
-    :x (guitar-pick md-guitar 5 7)
+    :x (static-bs10)
     :y (guitar-pick md-guitar 3 5)
     :z (guitar-pick md-guitar 1 3)))
 

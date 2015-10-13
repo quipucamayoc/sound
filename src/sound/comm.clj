@@ -166,7 +166,7 @@
       5 (alter-device-input id :b value)
       6 (alter-device-input id :c value)
       7 (alter-device-input id :d value)
-      8 (alter-device-input id :t value))
+      8 (alter-device-input id :type value))
     #_(cond
       (= :x-y axis) (do
                      (dosync (alter device-input #(merge-with merge % {id {:x (constrain-axis (take-piece true value) 427 1047)}})))
@@ -265,15 +265,42 @@
                     :volb (create-volume y in-min in-max)
                     :volc (create-volume z in-min in-max)]]
 
-    (if a (send-tap (first lone-device) a :large :x))
+    (if a (send-tap (first lone-device) a :small :x))
     (if b (send-tap (first lone-device) b :small :y))
-    (if c (send-tap (first lone-device) c :small :x))
-    (if d (change-inst (first lone-device) d))
+    (if c (send-tap (first lone-device) c :small :z))
+    (if d (send-tap (first lone-device) d :medium :x))
+
+    #_(go (>! iot-stream {:topic topic
+                        :msg   {:device (first lone-device)
+                                :action action
+                                :data   normalized}}))))
+
+(defn axis-mapped-no-touch
+  "Detects and dispatches movements based on rise and fall"
+  [lone-device in-min in-max topic action]
+  (let [{:keys [x y z  a b c d]} (second lone-device)
+        normalized [:vola (create-volume x in-min in-max)
+                    :volb (create-volume y in-min in-max)
+                    :volc (create-volume z in-min in-max)]]
 
     (go (>! iot-stream {:topic topic
                         :msg   {:device (first lone-device)
                                 :action action
                                 :data   normalized}}))))
+
+(defn axis-mapped-no-touch-upper-sensor
+  "Detects and dispatches movements based on rise and fall"
+  [lone-device in-min in-max topic action]
+  (let [{:keys [x y z  a b c d]} (second lone-device)
+        normalized [:vola (create-volume a in-min in-max)
+                    :volb (create-volume b in-min in-max)
+                    :volc (create-volume c in-min in-max)]]
+
+    (go (>! iot-stream {:topic topic
+                        :msg   {:device (first lone-device)
+                                :action action
+                                :data   normalized}}))))
+
 
 ;; ### Organization
 
@@ -299,9 +326,18 @@
 
     ;; Temporary setup for a per-instrument test.
     #_(println "hi")
-    (let [vmap (vec merged-devices)]
-      (not= (nil? (first vmap))
-            (axis-mapped (first vmap) -250 250 :sample-blend :thunder-storm)))
+    ;(let [vmap (vec merged-devices)]
+    ;  (not= (nil? (first vmap))
+    ;        (axis-mapped (first vmap) -250 250 :sample-blend :thunder-storm)))
+
+    (let [vmap (vec merged-devices)
+          num (count vmap)]
+      (doall (mapv (fn [[id data]]
+              (case (:type data)
+                0 (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm)
+                1 (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm)
+                2 (axis-mapped {id data} -250 250 :sample-blend :thunder-storm)
+                nil)) vmap)))
 
     (comment (fn [& args]
                (not= (nil? (first args))
