@@ -322,8 +322,6 @@
   [devices]
   (when-let [merged-devices (arrange-device-data devices)]
 
-
-
     ;; Temporary setup for a per-instrument test.
     #_(println "hi")
     ;(let [vmap (vec merged-devices)]
@@ -335,9 +333,9 @@
       (doall (mapv (fn [[id data]]
                      (when (last (:type data))
                        (case (last (:type data))
-                         0.0 (do (pprint [id (last (:type data))]) (axis-mapped-no-touch [id data] -250 250 :sample-blend :thunder-storm))
-                         1.0 (do (pprint [id (last (:type data))]) (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :thunder-storm))
-                         2.0 (do (pprint [id (last (:type data))]) (axis-mapped [id data] -250 250 :sample-blend :thunder-storm))
+                         0.0 (do (pprint [id (last (:type data)) num]) (axis-mapped-no-touch [id data] -250 250 :sample-blend :thunder-storm))
+                         1.0 (do (pprint [id (last (:type data)) num]) (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :thunder-storm))
+                         2.0 (do (pprint [id (last (:type data)) num]) (axis-mapped [id data] -250 250 :sample-blend :thunder-storm))
                          (pprint data)))) vmap)))
 
     (comment (fn [& args]
