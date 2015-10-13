@@ -333,8 +333,7 @@
     (let [vmap (vec merged-devices)
           num (count vmap)]
       (doall (mapv (fn [[id data]]
-                     (when-let [t (not (or (nil? (last (:type data)))
-                                           (false? (last (:type data)))))]
+                     (when (last (:type data))
                        (case (last (:type data))
                          0.0 (do (pprint {id (last (:type data))}) (axis-mapped-no-touch {id data} -250 250 :sample-blend :thunder-storm))
                          1.0 (do (pprint {id (last (:type data))}) (axis-mapped-no-touch-upper-sensor {id data} -250 250 :sample-blend :thunder-storm))
