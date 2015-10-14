@@ -152,7 +152,7 @@
   (axis-trigger msg))
 
 (defmethod control :sample-blend [{:keys [msg]}]
-  (ctl-current msg))
+  (sample-blend msg))
 
 (defmethod control :change-inst [{:keys [msg]}]
   (println msg)
