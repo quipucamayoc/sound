@@ -270,8 +270,8 @@
   [lone-device in-min in-max topic action]
   (let [{:keys [x y z a b c d]} (second lone-device)
         normalized [:vola (create-volume x in-min in-max)
-                    :volb (create-volume y in-min in-max)
-                    :volc (create-volume z in-min in-max)]]
+                    :volb 0
+                    :volc 0]]
 
     (if a (send-tap (first lone-device) a :small :x))
     (if b (send-tap (first lone-device) b :small :y))
@@ -356,7 +356,7 @@
                        (case (int (last (:type data)))
                          (1 1.0 "1") (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :yacana)
                          (2 2.0 "2") (axis-mapped [id data] -250 250 :sample-blend :masoma)
-                         (3 3.0 "3") (axis-mapped-analog [id data] 100 950 :sample-blend :pariacaca)
+                         (3 3.0 "3") (axis-mapped-analog [id data] 150 850 :sample-blend :pariacaca)
                          (do
                            (println "Fail at :type #" (last (:type data)))
                            (pprint data)))
