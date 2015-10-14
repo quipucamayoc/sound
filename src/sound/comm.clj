@@ -242,6 +242,14 @@
         (norm 0 250))
     0))
 
+(defn create-volume2 [v in-min in-max]
+  (if v
+    (-> (- 1000 (/ (apply + v) (count v)))
+        (constrain in-min in-max)
+        (map-range in-min in-max 0 250)
+        (norm 0 250))
+    0))
+
 (defn send-tap [device tap scale variation]
   (if (< 2 (count tap))
     (when (= 1 (floor (last tap)))
@@ -279,8 +287,8 @@
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
   (let [{:keys [x y z a b c d]} (second lone-device)
-        normalized [:vola (create-volume a in-min in-max)
-                    :volb (create-volume b in-min in-max)
+        normalized [:vola (create-volume2 a in-min in-max)
+                    :volb (create-volume2 b in-min in-max)
                     :volc 0]]
 
     (go (>! iot-stream {:topic topic
@@ -348,7 +356,7 @@
                        (case (int (last (:type data)))
                          (1 1.0 "1") (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :thunder-storm))
                          (2 2.0 "2") (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch [id data] -250 250 :sample-blend :thunder-storm))
-                         (3 3.0 "3") (do (println [id (last (:type data)) num vmap]) (axis-mapped-analog [id data] 999 100 :sample-blend :thunder-storm))
+                         (3 3.0 "3") (do (println [id (last (:type data)) num vmap]) (axis-mapped-analog [id data] 100 950 :sample-blend :thunder-storm))
                          (do
                            (println "Fail at :type #" (last (:type data)))
                            (pprint data)))
