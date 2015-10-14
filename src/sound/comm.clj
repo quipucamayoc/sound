@@ -281,7 +281,7 @@
   (let [{:keys [x y z a b c d]} (second lone-device)
         normalized [:vola (create-volume a in-min in-max)
                     :volb (create-volume b in-min in-max)
-                    :volc (create-volume [0] in-min in-max)]]
+                    :volc 0]]
 
     (go (>! iot-stream {:topic topic
                           :msg   {:device (first lone-device)
@@ -348,7 +348,7 @@
                        (case (int (last (:type data)))
                          (1 1.0 "1") (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :thunder-storm))
                          (2 2.0 "2") (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch [id data] -250 250 :sample-blend :thunder-storm))
-                         (3 3.0 "3") (do (println [id (last (:type data)) num vmap]) (axis-mapped-analog [id data] 999 0 :sample-blend :thunder-storm))
+                         (3 3.0 "3") (do (println [id (last (:type data)) num vmap]) (axis-mapped-analog [id data] 0 2048 :sample-blend :thunder-storm))
                          (do
                            (println "Fail at :type #" (last (:type data)))
                            (pprint data)))
