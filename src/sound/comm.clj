@@ -354,9 +354,9 @@
       (doall (mapv (fn [[id data]]
                      (if (last (:type data))
                        (case (int (last (:type data)))
-                         (1 1.0 "1") (do #_(println data) (axis-mapped-no-touch-upper-sensor [id data] 0 250 :sample-blend :yacana))
+                         (1 1.0 "1") (do #_(println data) (axis-mapped-no-touch-upper-sensor [id data] 0 250 :sample-blend :pariacaca))
                          (2 2.0 "2") (do #_(println data) (axis-mapped [id data] -250 250 :sample-blend :masoma))
-                         (3 3.0 "3") (do #_(println data) (axis-mapped-analog [id data] 150 1000 :sample-blend :pariacaca))
+                         (3 3.0 "3") (do #_(println data) (axis-mapped-analog [id data] 150 1000 :sample-blend :masoma))
                          (do
                            (println "Fail at :type #" (last (:type data)))
                            (pprint data)))
