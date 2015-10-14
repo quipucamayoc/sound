@@ -20,28 +20,28 @@
 (defonce bs5 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 1.wav"))
 (definst play-bs5 [amp 1]
          (* amp (play-buf 1 bs5)))
-(def static-bs5 (partial play-bs5 :amp 0.5))
+(def static-bs5 (partial play-bs5 :amp 0.3))
 
 (defonce bs6 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 2.wav"))
 (definst play-bs6 [amp 1]
          (* amp (play-buf 1 bs6)))
-(def static-bs6 (partial play-bs6 :amp 0.5))
+(def static-bs6 (partial play-bs6 :amp 0.3))
 
 (defonce bs8 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 3.wav"))
 (definst play-bs8 [amp 1]
          (* (play-buf 1 bs8) amp))
-(def static-bs8 (partial play-bs8 :amp 0.5))
+(def static-bs8 (partial play-bs8 :amp 0.3))
 
 (defonce bs9 (load-sample "assets/ws_two/Birth of Pariacaca/Short/Siku 4.wav"))
 (definst play-bs9 [amp 1]
          (* (play-buf 1 bs9) amp))
-(def static-bs9 (partial play-bs9 :amp 0.5))
+(def static-bs9 (partial play-bs9 :amp 0.3))
 
 
 (defonce bs10 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 1.wav"))
 (definst play-bs10 [amp 1]
          (* (play-buf 1 bs10) amp))
-(def static-bs10 (partial play-bs10 :amp 0.5))
+(def static-bs10 (partial play-bs10 :amp 0.3))
 
 
 ;; ## Sound Helpers
