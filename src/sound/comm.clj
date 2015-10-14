@@ -275,6 +275,19 @@
                                   :action action
                                   :data   normalized}}))))
 
+(defn axis-mapped-analog
+  "Detects and dispatches movements based on rise and fall"
+  [lone-device in-min in-max topic action]
+  (let [{:keys [x y z a b c d]} (second lone-device)
+        normalized [:vola (create-volume a in-min in-max)
+                    :volb (create-volume b in-min in-max)
+                    :volc (create-volume [0] in-min in-max)]]
+
+    (go (>! iot-stream {:topic topic
+                          :msg   {:device (first lone-device)
+                                  :action action
+                                  :data   normalized}}))))
+
 (defn axis-mapped-no-touch
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
@@ -331,11 +344,16 @@
     (let [vmap (vec merged-devices)
           num (count vmap)]
       (doall (mapv (fn [[id data]]
-                     (when (last (:type data))
-                       (case (last (:type data))
-                         0.0 (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch [id data] -250 250 :sample-blend :thunder-storm))
-                         1.0 (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :thunder-storm))
-                         2.0 (do (println [id (last (:type data)) num vmap]) (axis-mapped [id data] -250 250 :sample-blend :thunder-storm))
+                     (if (last (:type data))
+                       (case (int (last (:type data)))
+                         (1 1.0 "1") (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :thunder-storm))
+                         (2 2.0 "2") (do (println [id (last (:type data)) num vmap]) (axis-mapped-no-touch [id data] -250 250 :sample-blend :thunder-storm))
+                         (3 3.0 "3") (do (println [id (last (:type data)) num vmap]) (axis-mapped-analog [id data] 0 999 :sample-blend :thunder-storm))
+                         (do
+                           (println "Fail at :type #" (last (:type data)))
+                           (pprint data)))
+                       (do
+                         (println "Fail at :type")
                          (pprint data)))) vmap)))
 
     (comment (fn [& args]
