@@ -287,9 +287,9 @@
   "Detects and dispatches movements based on rise and fall"
   [lone-device in-min in-max topic action]
   (let [{:keys [x y z a b c d]} (second lone-device)
-        normalized [:vola (create-volume2 a in-min in-max)
+        normalized [:vola 0
                     :volb (create-volume2 b in-min in-max)
-                    :volc 0]]
+                    :volc (create-volume2 a in-min in-max)]]
 
     (go (>! iot-stream {:topic topic
                           :msg   {:device (first lone-device)
@@ -356,7 +356,7 @@
                        (case (int (last (:type data)))
                          (1 1.0 "1") (axis-mapped-no-touch-upper-sensor [id data] -250 250 :sample-blend :yacana)
                          (2 2.0 "2") (axis-mapped [id data] -250 250 :sample-blend :masoma)
-                         (3 3.0 "3") (axis-mapped-analog [id data] 150 850 :sample-blend :pariacaca)
+                         (3 3.0 "3") (axis-mapped-analog [id data] 150 1000 :sample-blend :pariacaca)
                          (do
                            (println "Fail at :type #" (last (:type data)))
                            (pprint data)))

@@ -92,9 +92,9 @@
 (defonce pariacaca-long-rain (load-sample "assets/ws_two/Birth of Pariacaca/Long Tracks/Rain.wav"))
 
 (definst pariacaca [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 1) (play-buf :num-channels 1 :bufnum pariacaca-long-joel&ronald :loop 1))
-               b (* (* volb 1) (play-buf :num-channels 1 :bufnum pariacaca-long-polar-wind :loop 1))
-               c (* (* volc 1) (play-buf :num-channels 1 :bufnum pariacaca-long-rain :loop 1))]
+         (let [a (* (* volb 2) (play-buf :num-channels 1 :bufnum pariacaca-long-joel&ronald :loop 1))
+               b (* (* volb 2) (play-buf :num-channels 1 :bufnum pariacaca-long-polar-wind :loop 1))
+               c (* (* volc 2) (play-buf :num-channels 1 :bufnum pariacaca-long-rain :loop 1))]
            (mix [a b c])))
 
 (defonce masoma-long-flies (load-sample "assets/ws_two/Masoma/Long Tracks/Flies.wav"))
@@ -102,9 +102,9 @@
 (defonce masoma-long-quechua (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
 
 (definst masoma [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 1) (play-buf :num-channels 1 :bufnum masoma-long-flies :loop 1))
-               b (* (* volb 1) (play-buf :num-channels 1 :bufnum masoma-long-omar&joel :loop 1))
-               c (* (* volc 1) (play-buf :num-channels 1 :bufnum masoma-long-quechua :loop 1))]
+         (let [a (* (* volb 2) (play-buf :num-channels 1 :bufnum masoma-long-flies :loop 1))
+               b (* (* volb 2) (play-buf :num-channels 1 :bufnum masoma-long-omar&joel :loop 1))
+               c (* (* volc 2) (play-buf :num-channels 1 :bufnum masoma-long-quechua :loop 1))]
            (mix [a b c])))
 
 (defonce yacana-long-blue-beans (load-sample "assets/ws_two/Yacana/Long Tracks/Blue Beans Buenos Aires Wrkshp.wav"))
@@ -112,9 +112,9 @@
 (defonce yacana-water-stream (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
 
 (definst yacana [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 1) (play-buf :num-channels 1 :bufnum yacana-long-blue-beans :loop 1))
-               b (* (* volb 1) (play-buf :num-channels 1 :bufnum yacana-earthquake :loop 1))
-               c (* (* volc 1) (play-buf :num-channels 1 :bufnum yacana-water-stream :loop 1))]
+         (let [a (* (* volb 2) (play-buf :num-channels 1 :bufnum yacana-long-blue-beans :loop 1))
+               b (* (* volb 2) (play-buf :num-channels 1 :bufnum yacana-earthquake :loop 1))
+               c (* (* volc 2) (play-buf :num-channels 1 :bufnum yacana-water-stream :loop 1))]
            (mix [a b c])))
 
 ;; To-Do, cleaner cuts.
