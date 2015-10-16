@@ -65,7 +65,7 @@
 
 (defmethod axis-trigger :large [msg]
   (case (:sensor msg)
-    :x (static-bs10)
+    :x (static-bs9)
     :y (guitar-pick lg-guitar 3 5)
     :z (guitar-pick lg-guitar 1 3)))
 
@@ -92,9 +92,9 @@
 (defonce pariacaca-long-rain (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
 
 (definst pariacaca [vola 1 volb 0 volc 0]
-         (let [a (* (* volb 2) (play-buf :num-channels 1 :bufnum pariacaca-long-joel&ronald :loop 1))
-               b (* (* volb 2) (play-buf :num-channels 1 :bufnum pariacaca-long-polar-wind :loop 1))
-               c (* (* volc 2) (play-buf :num-channels 1 :bufnum pariacaca-long-rain :loop 1))]
+         (let [a (* (* volb 3) (play-buf :num-channels 1 :bufnum pariacaca-long-joel&ronald :loop 1))
+               b (* (* volb 3) (play-buf :num-channels 1 :bufnum pariacaca-long-polar-wind :loop 1))
+               c (* (* volc 3) (play-buf :num-channels 1 :bufnum pariacaca-long-rain :loop 1))]
            (mix [a b c])))
 
 (defonce masoma-long-flies (load-sample "assets/ws_two/Masoma/Medium/chac chac.wav"))
