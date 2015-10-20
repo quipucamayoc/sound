@@ -17,17 +17,17 @@
 ;; ## Sample Sampled Instruments
 ;; ### Guitar Pluck
 
-(defonce bs5 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 1.wav"))
+(defonce bs5 (load-sample "assets/ws_two/Yacana/Short/Frog 2.wav"))
 (definst play-bs5 [amp 1]
          (* amp (play-buf 1 bs5)))
 (def static-bs5 (partial play-bs5 :amp 0.3))
 
-(defonce bs6 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 2.wav"))
+(defonce bs6 (load-sample "assets/ws_two/Yacana/Short/Frog 3.wav"))
 (definst play-bs6 [amp 1]
          (* amp (play-buf 1 bs6)))
 (def static-bs6 (partial play-bs6 :amp 0.3))
 
-(defonce bs8 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 3.wav"))
+(defonce bs8 (load-sample "assets/ws_two/Yacana/Short/Scissors 1.wav"))
 (definst play-bs8 [amp 1]
          (* (play-buf 1 bs8) amp))
 (def static-bs8 (partial play-bs8 :amp 0.3))
@@ -38,7 +38,7 @@
 (def static-bs9 (partial play-bs9 :amp 0.3))
 
 
-(defonce bs10 (load-sample "assets/ws_two/Masoma/Short/Woman Voice Sound 1.wav"))
+(defonce bs10 (load-sample "assets/ws_two/Birth of Pariacaca/Short/Siku 6.wav"))
 (definst play-bs10 [amp 1]
          (* (play-buf 1 bs10) amp))
 (def static-bs10 (partial play-bs10 :amp 0.3))
@@ -87,9 +87,9 @@
 
 ;; October 2015 Workshop
 
-(defonce pariacaca-long-joel&ronald (load-sample "assets/ws_two/Masoma/Long Tracks/Flies.wav"))
-(defonce pariacaca-long-polar-wind (load-sample "assets/ws_two/Masoma/Long Tracks/Omar and Joel.wav"))
-(defonce pariacaca-long-rain (load-sample "assets/ws_two/Masoma/Long Tracks/Quechua text read out loud.wav"))
+(defonce pariacaca-long-joel&ronald (load-sample "assets/ws_two/Yacana/Long Tracks/Blue Beans Buenos Aires Wrkshp.wav"))
+(defonce pariacaca-long-polar-wind (load-sample "assets/ws_two/Yacana/Long Tracks/Earthquake Rumble.wav"))
+(defonce pariacaca-long-rain (load-sample "assets/ws_two/Yacana/Long Tracks/Water Stream.wav"))
 
 (definst pariacaca [vola 1 volb 0 volc 0]
          (let [a (* (* volb 3) (play-buf :num-channels 1 :bufnum pariacaca-long-joel&ronald :loop 1))
@@ -97,9 +97,9 @@
                c (* (* volc 3) (play-buf :num-channels 1 :bufnum pariacaca-long-rain :loop 1))]
            (mix [a b c])))
 
-(defonce masoma-long-flies (load-sample "assets/ws_two/Masoma/Medium/chac chac.wav"))
-(defonce masoma-long-omar&joel (load-sample "assets/ws_two/Masoma/Medium/chus.wav"))
-(defonce masoma-long-quechua (load-sample "assets/ws_two/Masoma/Medium/siwas.wav"))
+(defonce masoma-long-flies (load-sample "assets/ws_two/Yacana/Medium/pinkuillo 1.wav"))
+(defonce masoma-long-omar&joel (load-sample "assets/ws_two/Yacana/Medium/pinkuillo 3.wav"))
+(defonce masoma-long-quechua (load-sample "assets/ws_two/Yacana/Medium/pinkuillo 6.wav"))
 
 (definst masoma [vola 1 volb 0 volc 0]
          (let [a (* (* volb 2) (play-buf :num-channels 1 :bufnum masoma-long-flies :loop 1))
